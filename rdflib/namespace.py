@@ -65,7 +65,7 @@ import os
 from urlparse import urljoin, urldefrag
 from urllib import pathname2url
 
-from rdflib.term import URIRef, Variable, _XSD_PFX, _is_valid_uri
+from rdflib.term import URIRef, Variable, _XSD_TYPES, _is_valid_uri
 
 __all__ = [
     'is_ncname', 'split_uri', 'Namespace',
@@ -233,7 +233,10 @@ RDFS = ClosedNamespace(
 
 OWL = Namespace('http://www.w3.org/2002/07/owl#')
 
-XSD = Namespace(_XSD_PFX)
+XSD = ClosedNamespace(
+    uri=URIRef('http://www.w3.org/2001/XMLSchema#'),
+    terms=_XSD_TYPES
+)
 
 SKOS = Namespace('http://www.w3.org/2004/02/skos/core#')
 DOAP = Namespace('http://usefulinc.com/ns/doap#')

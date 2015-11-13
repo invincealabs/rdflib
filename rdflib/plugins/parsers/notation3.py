@@ -39,7 +39,7 @@ from decimal import Decimal
 
 from uuid import uuid4
 
-from rdflib.term import URIRef, BNode, Literal, Variable, _XSD_PFX, _unique_id
+from rdflib.term import URIRef, BNode, Literal, Variable, _xsd, _unique_id
 from rdflib.graph import QuotedGraph, ConjunctiveGraph, Graph
 from rdflib import py3compat
 b = py3compat.b
@@ -280,11 +280,11 @@ DAML_sameAs = (SYMBOL, DAML_sameAs_URI)
 
 LOG_implies_URI = "http://www.w3.org/2000/10/swap/log#implies"
 
-BOOLEAN_DATATYPE = _XSD_PFX + "boolean"
-DECIMAL_DATATYPE = _XSD_PFX + "decimal"
-DOUBLE_DATATYPE = _XSD_PFX + "double"
-FLOAT_DATATYPE = _XSD_PFX + "float"
-INTEGER_DATATYPE = _XSD_PFX + "integer"
+BOOLEAN_DATATYPE = _xsd("boolean")
+DECIMAL_DATATYPE = _xsd( "decimal")
+DOUBLE_DATATYPE = _xsd("double")
+FLOAT_DATATYPE = _xsd("float")
+INTEGER_DATATYPE = _xsd("integer")
 
 option_noregen = 0    # If set, do not regenerate genids on output
 

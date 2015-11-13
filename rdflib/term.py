@@ -59,7 +59,7 @@ except ImportError:
 
 
 import rdflib
-from . import py3compat
+import py3compat
 from rdflib.compat import numeric_greater
 
 
@@ -795,8 +795,8 @@ class Literal(Identifier):
 
             # plain-literals and xsd:string literals
             # are "the same"
-            dtself = self.datatype or _XSD_STRING
-            dtother = other.datatype or _XSD_STRING
+            dtself = self.datatype or _xsd('string')
+            dtother = other.datatype or _xsd('string')
 
             if dtself != dtother:
                 if rdflib.DAWG_LITERAL_COLLATION:
@@ -839,10 +839,7 @@ class Literal(Identifier):
         if other is None:
             return False  # Nothing is less than None
         if isinstance(other, Literal):
-            try:
-                return not self.__gt__(other) and not self.eq(other)
-            except TypeError:
-                return NotImplemented
+            return not self.__gt__(other) and not self.eq(other)
         if isinstance(other, Node):
             return False  # all nodes are less-than Literals
 
@@ -887,8 +884,8 @@ class Literal(Identifier):
 
             else:
                 # xsd:string may be compared with plain literals
-                if not (self.datatype == _XSD_STRING and not other.datatype) or \
-                        (other.datatype == _XSD_STRING and not self.datatype):
+                if not (self.datatype == _xsd('string') and not other.datatype) or \
+                        (other.datatype == _xsd('string') and not self.datatype):
                     return False
 
                 # if given lang-tag has to be case insensitive equal
@@ -1013,10 +1010,10 @@ class Literal(Identifier):
             if (self.language or "").lower() != (other.language or "").lower():
                 return False
 
-            dtself = self.datatype or _XSD_STRING
-            dtother = other.datatype or _XSD_STRING
+            dtself = self.datatype or _xsd('string')
+            dtother = other.datatype or _xsd('string')
 
-            if (dtself == _XSD_STRING and dtother == _XSD_STRING):
+            if (dtself == _xsd('string') and dtother == _xsd('string')):
                 # string/plain literals, compare on lexical form
                 return unicode.__eq__(self, other)
 
@@ -1042,7 +1039,7 @@ class Literal(Identifier):
                 if unicode.__eq__(self, other):
                     return True
 
-                if self.datatype == _XSD_STRING:
+                if self.datatype == _xsd('string'):
                     return False  # string value space=lexical space
 
                 # matching DTs, but not matching, we cannot compare!
@@ -1059,17 +1056,17 @@ class Literal(Identifier):
             if self.language is not None:
                 return False
 
-            if (self.datatype == _XSD_STRING or self.datatype is None):
+            if (self.datatype == _xsd('string') or self.datatype is None):
                 return unicode(self) == other
 
         elif isinstance(other, (int, long, float)):
             if self.datatype in _NUMERIC_LITERAL_TYPES:
                 return self.value == other
         elif isinstance(other, (date, datetime, time)):
-            if self.datatype in (_XSD_DATETIME, _XSD_DATE, _XSD_TIME):
+            if self.datatype in (_xsd('dateTime'), _xsd('date'), _xsd('time')):
                 return self.value == other
         elif isinstance(other, bool):
-            if self.datatype == _XSD_BOOLEAN:
+            if self.datatype == _xsd('boolean'):
                 return self.value == other
 
         return NotImplemented
@@ -1189,15 +1186,15 @@ class Literal(Identifier):
                 # this is a bit of a mess -
                 # in py >=2.6 the string.format function makes this easier
                 # we try to produce "pretty" output
-                if self.datatype == _XSD_DOUBLE:
+                if self.datatype == _xsd('double'):
                     return sub("\\.?0*e", "e", u'%e' % float(self))
-                elif self.datatype == _XSD_DECIMAL:
+                elif self.datatype == _xsd('decimal'):
                     s = '%s' % self
                     if '.' not in s:
                         s += '.0'
                     return s
 
-                elif self.datatype == _XSD_BOOLEAN:
+                elif self.datatype == _xsd('boolean'):
                     return (u'%s' % self).lower()
                 else:
                     return u'%s' % self
@@ -1327,53 +1324,97 @@ def _writeXML(xmlnode):
     return s
 
 # Cannot import Namespace/XSD because of circular dependencies
-_XSD_PFX = 'http://www.w3.org/2001/XMLSchema#'
 _RDF_PFX = 'http://www.w3.org/1999/02/22-rdf-syntax-ns#'
 
 _RDF_XMLLITERAL = URIRef(_RDF_PFX + 'XMLLiteral')
 _RDF_HTMLLITERAL = URIRef(_RDF_PFX + 'HTML')
 
-_XSD_STRING = URIRef(_XSD_PFX + 'string')
+_XSD_TYPES = [
+    'string',
+    'anyURI',
+    'float',
+    'double',
+    'decimal',
+    'integer',
+    'boolean',
+    'dateTime',
+    'date',
+    'time',
+    'duration',
+    'gDay',
+    'gMonth',
+    'gMonthDay',
+    'gYear',
+    'gYearMonth',
+    'float',
+    'byte',
+    'normalizedString',
+    'token',
+    'language',
+    'int',
+    'long',
+    'negativeInteger',
+    'nonNegativeInteger',
+    'nonPositiveInteger',
+    'positiveInteger',
+    'short',
+    'unsignedByte',
+    'unsignedInt',
+    'unsignedLong',
+    'unsignedShort',
+    'base64Binary',
+    'hexBinary',
+    'dayTimeDuration',
+    'dateTimeStamp',
+    'yearMonthDuration',
+    'ID',
+    'IDREF',
+    'IDREFS',
+    "ENTITY",
+    'ENTITIES',
+    'NMTOKEN',
+    'NMTOKENS',
+    "Name",
+    "NCName",
+    "QName"
+]
 
-_XSD_FLOAT = URIRef(_XSD_PFX + 'float')
-_XSD_DOUBLE = URIRef(_XSD_PFX + 'double')
-_XSD_DECIMAL = URIRef(_XSD_PFX + 'decimal')
-_XSD_INTEGER = URIRef(_XSD_PFX + 'integer')
-_XSD_BOOLEAN = URIRef(_XSD_PFX + 'boolean')
 
-_XSD_DATETIME = URIRef(_XSD_PFX + 'dateTime')
-_XSD_DATE = URIRef(_XSD_PFX + 'date')
-_XSD_TIME = URIRef(_XSD_PFX + 'time')
+def _xsd(t):
+    if t not in _XSD_TYPES:
+        raise NameError("'%s' is not a known XSD Datatype" % t)
+    return URIRef('http://www.w3.org/2001/XMLSchema#') + t
+
 
 # TODO: duration, gYearMonth, gYear, gMonthDay, gDay, gMonth
 
 _NUMERIC_LITERAL_TYPES = (
-    _XSD_INTEGER,
-    _XSD_DECIMAL,
-    _XSD_DOUBLE,
-    URIRef(_XSD_PFX + 'float'),
+    _xsd('integer'),
+    _xsd('decimal'),
+    _xsd('double'),
+    _xsd('float'),
 
-    URIRef(_XSD_PFX + 'byte'),
-    URIRef(_XSD_PFX + 'int'),
-    URIRef(_XSD_PFX + 'long'),
-    URIRef(_XSD_PFX + 'negativeInteger'),
-    URIRef(_XSD_PFX + 'nonNegativeInteger'),
-    URIRef(_XSD_PFX + 'nonPositiveInteger'),
-    URIRef(_XSD_PFX + 'positiveInteger'),
-    URIRef(_XSD_PFX + 'short'),
-    URIRef(_XSD_PFX + 'unsignedByte'),
-    URIRef(_XSD_PFX + 'unsignedInt'),
-    URIRef(_XSD_PFX + 'unsignedLong'),
-    URIRef(_XSD_PFX + 'unsignedShort'),
+    _xsd('byte'),
+    _xsd('int'),
+    _xsd('long'),
+    _xsd('negativeInteger'),
+    _xsd('nonNegativeInteger'),
+    _xsd('nonPositiveInteger'),
+    _xsd('positiveInteger'),
+    _xsd('short'),
+    _xsd('unsignedByte'),
+    _xsd('unsignedInt'),
+    _xsd('unsignedLong'),
+    _xsd('unsignedShort'),
 
 )
 
 # these have "native" syntax in N3/SPARQL
 _PLAIN_LITERAL_TYPES = (
-    _XSD_INTEGER,
-    _XSD_BOOLEAN,
-    _XSD_DOUBLE,
-    _XSD_DECIMAL,
+    _xsd('integer'),
+    _xsd('decimal'),
+    _xsd('double'),
+    _xsd('boolean')
 )
 
 
@@ -1408,14 +1449,14 @@ from decimal import Decimal
 
 _PythonToXSD = [
     (basestring, (None, None)),
-    (float, (None, _XSD_DOUBLE)),
-    (bool, (lambda i:str(i).lower(), _XSD_BOOLEAN)),
-    (int, (None, _XSD_INTEGER)),
-    (long, (None, _XSD_INTEGER)),
-    (Decimal, (None, _XSD_DECIMAL)),
-    (datetime, (lambda i:i.isoformat(), _XSD_DATETIME)),
-    (date, (lambda i:i.isoformat(), _XSD_DATE)),
-    (time, (lambda i:i.isoformat(), _XSD_TIME)),
+    (float, (None, _xsd('double'))),
+    (bool, (lambda i:str(i).lower(), _xsd('boolean'))),
+    (int, (None, _xsd('integer'))),
+    (long, (None, _xsd('integer'))),
+    (Decimal, (None, _xsd('decimal'))),
+    (datetime, (lambda i:i.isoformat(), _xsd('dateTime'))),
+    (date, (lambda i:i.isoformat(), _xsd('date'))),
+    (time, (lambda i:i.isoformat(), _xsd('time'))),
     (xml.dom.minidom.Document, (_writeXML, _RDF_XMLLITERAL)),
     # this is a bit dirty - by accident the html5lib parser produces
     # DocumentFragments, and the xml parser Documents, letting this
@@ -1426,33 +1467,32 @@ _PythonToXSD = [
 
 XSDToPython = {
     None : None, # plain literals map directly to value space
-    URIRef(_XSD_PFX + 'time'): parse_time,
-    URIRef(_XSD_PFX + 'date'): parse_date,
-    URIRef(_XSD_PFX + 'dateTime'): parse_datetime,
-    URIRef(_XSD_PFX + 'string'): None,
-    URIRef(_XSD_PFX + 'normalizedString'): None,
-    URIRef(_XSD_PFX + 'token'): None,
-    URIRef(_XSD_PFX + 'language'): None,
-    URIRef(_XSD_PFX + 'boolean'): lambda i: i.lower() in ['1', 'true'],
-    URIRef(_XSD_PFX + 'decimal'): Decimal,
-    URIRef(_XSD_PFX + 'integer'): long,
-    URIRef(_XSD_PFX + 'nonPositiveInteger'): int,
-    URIRef(_XSD_PFX + 'long'): long,
-    URIRef(_XSD_PFX + 'nonNegativeInteger'): int,
-    URIRef(_XSD_PFX + 'negativeInteger'): int,
-    URIRef(_XSD_PFX + 'int'): long,
-    URIRef(_XSD_PFX + 'unsignedLong'): long,
-    URIRef(_XSD_PFX + 'positiveInteger'): int,
-    URIRef(_XSD_PFX + 'short'): int,
-    URIRef(_XSD_PFX + 'unsignedInt'): long,
-    URIRef(_XSD_PFX + 'byte'): int,
-    URIRef(_XSD_PFX + 'unsignedShort'): int,
-    URIRef(_XSD_PFX + 'unsignedByte'): int,
-    URIRef(_XSD_PFX + 'float'): float,
-    URIRef(_XSD_PFX + 'double'): float,
-    URIRef(
-        _XSD_PFX + 'base64Binary'): lambda s: base64.b64decode(py3compat.b(s)),
-    URIRef(_XSD_PFX + 'anyURI'): None,
+    _xsd('time'): parse_time,
+    _xsd('date'): parse_date,
+    _xsd('dateTime'): parse_datetime,
+    _xsd('string'): None,
+    _xsd('normalizedString'): None,
+    _xsd('token'): None,
+    _xsd('language'): None,
+    _xsd('boolean'): lambda i: i.lower() in ['1', 'true'],
+    _xsd('decimal'): Decimal,
+    _xsd('integer'): long,
+    _xsd('nonPositiveInteger'): int,
+    _xsd('long'): long,
+    _xsd('nonNegativeInteger'): int,
+    _xsd('negativeInteger'): int,
+    _xsd('int'): long,
+    _xsd('unsignedLong'): long,
+    _xsd('positiveInteger'): int,
+    _xsd('short'): int,
+    _xsd('unsignedInt'): long,
+    _xsd('byte'): int,
+    _xsd('unsignedShort'): int,
+    _xsd('unsignedByte'): int,
+    _xsd('float'): float,
+    _xsd('double'): float,
+    _xsd('base64Binary'): lambda s: base64.b64decode(py3compat.b(s)),
+    _xsd('anyURI'): None,
     _RDF_XMLLITERAL: _parseXML,
     _RDF_HTMLLITERAL: _parseHTML
 }
