@@ -1,3 +1,99 @@
+2015/02/19 RELEASE 4.2.0
+========================
+
+This is a new minor version of RDFLib including a handful of new features:
+
+* Supporting N-Triples 1.1 syntax using UTF-8 encoding
+  [#447](https://github.com/RDFLib/rdflib/pull/447),
+  [#449](https://github.com/RDFLib/rdflib/pull/449),
+  [#400](https://github.com/RDFLib/rdflib/issues/400)
+* Graph comparison now really works using RGDA1 (RDF Graph Digest Algorithm 1)
+  [#441](https://github.com/RDFLib/rdflib/pull/441)
+  [#385](https://github.com/RDFLib/rdflib/issues/385)
+* More graceful degradation than simple crashing for unicode chars > 0xFFFF on
+  narrow python builds. Parsing such characters will now work, but issue a
+  UnicodeWarning. If you run `python -W all` you will already see a warning on
+  `import rdflib` will show a warning (ImportWarning).
+  [#453](https://github.com/RDFLib/rdflib/pull/453),
+  [#454](https://github.com/RDFLib/rdflib/pull/454)
+* URLInputSource now supports json-ld
+  [#425](https://github.com/RDFLib/rdflib/pull/425)
+* SPARQLStore is now graph aware
+  [#401](https://github.com/RDFLib/rdflib/pull/401),
+  [#402](https://github.com/RDFLib/rdflib/pull/402)
+* SPARQLStore now uses SPARQLWrapper for updates
+  [#397](https://github.com/RDFLib/rdflib/pull/397)
+* Certain logging output is immediately shown in interactive mode
+  [#414](https://github.com/RDFLib/rdflib/pull/414)
+* Python 3.4 fully supported
+  [#418](https://github.com/RDFLib/rdflib/pull/418)
+
+Minor enhancements & bugs fixed:
+--------------------------------
+
+* Fixed double invocation of 2to3
+  [#437](https://github.com/RDFLib/rdflib/pull/437)
+* PyRDFa parser missing brackets
+  [#434](https://github.com/RDFLib/rdflib/pull/434)
+* Correctly handle \uXXXX and \UXXXXXXXX escapes in n3 files
+  [#426](https://github.com/RDFLib/rdflib/pull/426)
+* Logging cleanups and keeping it on stderr
+  [#420](https://github.com/RDFLib/rdflib/pull/420)
+  [#414](https://github.com/RDFLib/rdflib/pull/414)
+  [#413](https://github.com/RDFLib/rdflib/issues/413)
+* n3: allow @base URI to have a trailing '#'
+  [#407](https://github.com/RDFLib/rdflib/pull/407)
+  [#379](https://github.com/RDFLib/rdflib/issues/379)
+* microdata: add file:// to base if it's a filename so rdflib can parse its own
+  output
+  [#406](https://github.com/RDFLib/rdflib/pull/406)
+  [#403](https://github.com/RDFLib/rdflib/issues/403)
+* TSV Results parse skips empty bindings in result
+  [#390](https://github.com/RDFLib/rdflib/pull/390)
+* fixed accidental test run due to name
+  [#389](https://github.com/RDFLib/rdflib/pull/389)
+* Bad boolean list serialization to Turtle & fixed ambiguity between
+  Literal(False) and None
+  [#387](https://github.com/RDFLib/rdflib/pull/387)
+  [#382](https://github.com/RDFLib/rdflib/pull/382)
+* Current version number & PyPI link in README.md
+  [#383](https://github.com/RDFLib/rdflib/pull/383)
+
+
+2014/04/15 RELEASE 4.1.2
+========================
+
+This is a bug-fix release.
+
+* Fixed unicode/str bug in py3 for rdfpipe
+  [#375](https://github.com/RDFLib/rdflib/issues/375)
+
+2014/03/03 RELEASE 4.1.1
+========================
+
+This is a bug-fix release.
+
+This will be the last RDFLib release to support python 2.5.
+
+* The RDF/XML Parser was made stricter, now raises exceptions for
+  illegal repeated node-elements.
+  [#363](https://github.com/RDFLib/rdflib/issues/363)
+
+* The SPARQLUpdateStore now supports non-ascii unicode in update
+  statements
+  [#356](https://github.com/RDFLib/rdflib/issues/356)
+
+* Fixed a bug in the NTriple/NQuad parser wrt. to unicode escape sequences
+  [#352](https://github.com/RDFLib/rdflib/issues/352)
+
+* HTML5Lib is no longer pinned to 0.95
+  [#355](https://github.com/RDFLib/rdflib/issues/360)
+
+* RDF/XML Serializer now uses parseType=Literal for well-formed XML literals
+
+* A bug in the manchester OWL syntax was fixed
+  [#355](https://github.com/RDFLib/rdflib/issues/355)
+
 2013/12/31 RELEASE 4.1
 ======================
 
@@ -21,7 +117,7 @@ This is a new minor version RDFLib, which includes a handful of new features:
 
 * Optional graph-tracking was added to the Store interface, allowing
   empty graphs to be tracked for Datasets. The DataSet class also saw
-  a general clean-up, see: https://github.com/RDFLib/rdflib/pull/309
+  a general clean-up, see: [#309](https://github.com/RDFLib/rdflib/pull/309)
 
 * After long deprecation, ```BackwardCompatibleGraph``` was removed.
 
@@ -37,37 +133,37 @@ Minor enhancements/bugs fixed:
 * MD5 sums were never reinitialized in ```rdflib.compare```
 
 * Correct default value for empty prefix in N3
-  [#312]https://github.com/RDFLib/rdflib/issues/312
+  [#312](https://github.com/RDFLib/rdflib/issues/312)
 
 * Fixed tests when running in a non UTF-8 locale
-  [#344]https://github.com/RDFLib/rdflib/issues/344
+  [#344](https://github.com/RDFLib/rdflib/issues/344)
 
 * Prefix in the original turtle have an impact on SPARQL query
   resolution
-  [#313]https://github.com/RDFLib/rdflib/issues/313
+  [#313](https://github.com/RDFLib/rdflib/issues/313)
 
 * Duplicate BNode IDs from N3 Parser
-  [#305]https://github.com/RDFLib/rdflib/issues/305
+  [#305](https://github.com/RDFLib/rdflib/issues/305)
 
 * Use QNames for TriG graph names
-  [#330]https://github.com/RDFLib/rdflib/issues/330
+  [#330](https://github.com/RDFLib/rdflib/issues/330)
 
 * \uXXXX escapes in Turtle/N3 were fixed
-  [#335]https://github.com/RDFLib/rdflib/issues/335
+  [#335](https://github.com/RDFLib/rdflib/issues/335)
 
 * A way to limit the number of triples retrieved from the
   ```SPARQLStore``` was added
-  [#346]https://github.com/RDFLib/rdflib/pull/346
+  [#346](https://github.com/RDFLib/rdflib/pull/346)
 
 * Dots in localnames in Turtle
-  [#345]https://github.com/RDFLib/rdflib/issues/345
-  [#336]https://github.com/RDFLib/rdflib/issues/336
+  [#345](https://github.com/RDFLib/rdflib/issues/345)
+  [#336](https://github.com/RDFLib/rdflib/issues/336)
 
 * ```BNode``` as Graph's public ID
-  [#300]https://github.com/RDFLib/rdflib/issues/300
+  [#300](https://github.com/RDFLib/rdflib/issues/300)
 
 * Introduced ordering of ```QuotedGraphs```
-  [#291]https://github.com/RDFLib/rdflib/issues/291
+  [#291](https://github.com/RDFLib/rdflib/issues/291)
 
 2013/05/22 RELEASE 4.0.1
 ========================

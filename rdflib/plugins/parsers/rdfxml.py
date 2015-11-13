@@ -323,6 +323,13 @@ class RDFXMLHandler(handler.ContentHandler):
         current.subject = subject
 
     def node_element_end(self, name, qname):
+        # repeat node-elements are only allowed
+        # at at top-level
+
+        if self.parent.object and self.current != self.stack[2]:
+
+            self.error("Repeat node-elements inside property elements: %s"%"".join(name))
+
         self.parent.object = self.current.subject
 
     def property_element_start(self, name, qname, attrs):

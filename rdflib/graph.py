@@ -1,9 +1,7 @@
 from rdflib.term import Literal  # required for doctests
-l = Literal('')
-del l
+assert Literal # avoid warning
 from rdflib.namespace import Namespace  # required for doctests
-n = Namespace('xxx')
-del n
+assert Namespace # avoid warning
 from rdflib.py3compat import format_doctest_out
 
 __doc__ = format_doctest_out("""\
@@ -232,7 +230,7 @@ Using Namespace class:
 """)
 
 import logging
-_logger = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 # import md5
 import random
@@ -793,7 +791,7 @@ class Graph(Node):
         chain = set([list])
         while list:
             item = self.value(list, RDF.first)
-            if item:
+            if item is not None:
                 yield item
             list = self.value(list, RDF.rest)
             if list in chain:

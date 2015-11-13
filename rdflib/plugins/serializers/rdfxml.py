@@ -12,6 +12,7 @@ from rdflib.serializer import Serializer
 from rdflib.py3compat import b
 
 from xml.sax.saxutils import quoteattr, escape
+import xml.dom.minidom
 
 from xmlwriter import ESCAPE_ENTITIES
 
@@ -270,10 +271,15 @@ class PrettyXMLSerializer(Serializer):
             if object.language:
                 writer.attribute(XMLLANG, object.language)
 
-            if object.datatype:
-                writer.attribute(RDF.datatype, object.datatype)
-
-            writer.text(object)
+            if (object.datatype == RDF.XMLLiteral and
+                    isinstance(object.value, xml.dom.minidom.Document)):
+                writer.attribute(RDF.parseType, "Literal")
+                writer.text(u"")
+                writer.stream.write(object)
+            else:
+                if object.datatype:
+                    writer.attribute(RDF.datatype, object.datatype)
+                writer.text(object)
 
         elif object in self.__serialized or not (object, None, None) in store:
 
