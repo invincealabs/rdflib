@@ -753,6 +753,104 @@ class Literal(Identifier):
         else:
             raise TypeError("Not a number; %s" % repr(self))
 
+    @staticmethod
+    def compare(self, other):
+        """ This implements ordering for Literals without
+        overriding __lt__ and __gt__ (which has downsides).
+
+        This tries to implement this:
+        http://www.w3.org/TR/sparql11-query/#modOrderBy
+
+        In short, Literals with compatible data-types are orderd in value space,
+        i.e.
+        >>> from rdflib import XSD
+
+        >>> Literal(1)>Literal(2) # int/int
+        False
+        >>> Literal(2.0)>Literal(1) # double/int
+        True
+        >>> from decimal import Decimal
+        >>> Literal(Decimal("3.3")) > Literal(2.0) # decimal/double
+        True
+        >>> Literal(Decimal("3.3")) < Literal(4.0) # decimal/double
+        True
+        >>> Literal('b')>Literal('a') # plain lit/plain lit
+        True
+        >>> Literal('b')>Literal('a', datatype=XSD.string) # plain lit/xsd:string
+        True
+
+        Incompatible datatype mismatches ordered by DT
+
+        >>> Literal(1)>Literal("2") # int>string
+        False
+
+        Langtagged literals by lang tag
+        >>> Literal("a", lang="en")>Literal("a", lang="fr")
+        False
+        """
+        if self is other:
+            return 0
+
+        if other is None:
+            return 1
+
+        if self.eq(other):
+            return 0
+
+        if isinstance(other, Literal):
+
+            if self.datatype in _NUMERIC_LITERAL_TYPES and \
+                    other.datatype in _NUMERIC_LITERAL_TYPES:
+                if numeric_greater(self.value, other.value):
+                    return 1
+                else:
+                    return -1
+
+            # plain-literals and xsd:string literals
+            # are "the same"
+            dtself = self.datatype or _xsd('string')
+            dtother = other.datatype or _xsd('string')
+
+            if dtself != dtother:
+                if rdflib.DAWG_LITERAL_COLLATION:
+                    raise TypeError(
+                        "I don't know how to compare literals "
+                        "with datatypes %s and %s" % (
+                            self.datatype, other.datatype))
+                else:
+                    return cmp(dtself, dtother)
+
+            if self.language != other.language:
+                if not self.language:
+                    return -1
+                elif not other.language:
+                    return 1
+                else:
+                    return cmp(self.language,other.language)
+
+            if self.value != None and other.value != None:
+                return cmp(self.value, other.value)
+
+            if unicode(self) != unicode(other):
+                return cmp(unicode(self), unicode(other))
+
+            # same language, same lexical form, check real dt
+            # plain-literals come before xsd:string!
+            if self.datatype != other.datatype:
+                if not self.datatype:
+                    return -1
+                elif not other.datatype:
+                    return 1
+                else:
+                    return cmp(self.datatype, other.datatype)
+
+            return 0  # they are the same
+
+        elif isinstance(other, Node):
+            return 1  # Literal are the greatest!
+        else:
+            return NotImplemented  # we can only compare to nodes
+
     def __gt__(self, other):
         """
 

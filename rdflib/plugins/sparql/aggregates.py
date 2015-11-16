@@ -5,6 +5,7 @@ from rdflib.plugins.sparql.operators import numeric
 from rdflib.plugins.sparql.datatypes import type_promotion
 
 from rdflib.plugins.sparql.compat import num_max, num_min
+from rdflib.compat import cmp_to_key
 
 from decimal import Decimal
 
@@ -53,11 +54,11 @@ def agg_Min(a, group, bindings):
 
     for x in group:
         try:
-            v = numeric(_eval(a.vars, x))
+            v = _eval(a.vars, x)
             if m is None:
                 m = v
             else:
-                m = num_min(v, m)
+                m = min(v, m, key=cmp_to_key(v.compare))
         except:
             return  # error in aggregate => no binding
 
@@ -70,11 +71,11 @@ def agg_Max(a, group, bindings):
 
     for x in group:
         try:
-            v = numeric(_eval(a.vars, x))
+            v =_eval(a.vars, x)
             if m is None:
                 m = v
             else:
-                m = num_max(v, m)
+                m = max(v, m, key=cmp_to_key(v.compare))
         except:
             return  # error in aggregate => no binding
 
