@@ -46,18 +46,13 @@ def _ebv(expr, ctx):
     except SPARQLError:
         pass
     if isinstance(expr, Expr):
-        try:
-            return EBV(expr.eval(ctx))
-        except SPARQLError:
-            return False  # filter error == False
+        return EBV(expr.eval(ctx))
     elif isinstance(expr, CompValue):
         raise Exception(
             "Weird - filter got a CompValue without evalfn! %r" % expr)
     elif isinstance(expr, Variable):
-        try:
-            return EBV(ctx[expr])
-        except:
-            return False
+        return EBV(ctx[expr])
+
     return False
 
 
