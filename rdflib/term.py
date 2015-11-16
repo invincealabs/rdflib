@@ -804,8 +804,7 @@ class Literal(Identifier):
 
             if dtself != dtother:
                 if rdflib.DAWG_LITERAL_COLLATION:
-                    raise TypeError("I don't know how to compare literals with datatypes %s and %s" % (
-                        self.datatype, other.datatype))
+                    return NotImplemented
                 else:
                     return dtself > dtother
 
@@ -860,13 +859,19 @@ class Literal(Identifier):
         r = self.__lt__(other)
         if r:
             return True
-        return self.eq(other)
+        try:
+            return self.eq(other)
+        except TypeError:
+            return NotImplemented
 
     def __ge__(self, other):
         r = self.__gt__(other)
         if r:
             return True
-        return self.eq(other)
+        try:
+            return self.eq(other)
+        except TypeError:
+            return NotImplemented
 
     def _comparable_to(self, other):
         """
