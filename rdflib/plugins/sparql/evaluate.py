@@ -127,7 +127,6 @@ def evalMinus(ctx, minus):
 
 
 def evalLeftJoin(ctx, join):
-    # import pdb; pdb.set_trace()
     for a in evalPart(ctx, join.p1):
         ok = False
         c = ctx.thaw(a)
@@ -262,7 +261,6 @@ def evalPart(ctx, part):
         raise Exception('DESCRIBE not implemented')
 
     else:
-        # import pdb ; pdb.set_trace()
         raise Exception('I dont know: %s' % part.name)
 
 
@@ -284,7 +282,6 @@ def evalGroup(ctx, group):
 
 
 def evalAggregateJoin(ctx, agg):
-    # import pdb ; pdb.set_trace()
     p = evalPart(ctx, agg.p)
     # p is always a Group, we always get a dict back
 
@@ -324,7 +321,6 @@ def evalOrderBy(ctx, part):
 
 
 def evalSlice(ctx, slice):
-    # import pdb; pdb.set_trace()
     res = evalPart(ctx, slice.p)
     i = 0
     while i < slice.start:
@@ -359,6 +355,10 @@ def evalDistinct(ctx, part):
 def evalProject(ctx, project):
     res = evalPart(ctx, project.p)
 
+    # result = []
+    # for row in res:
+        # result.append(row.project(project.PV))
+    # return result
     return (row.project(project.PV) for row in res)
 
 
@@ -415,7 +415,6 @@ def evalQuery(graph, query, initBindings, base=None):
 
     main = query.algebra
 
-    # import pdb; pdb.set_trace()
     if main.datasetClause:
         if ctx.dataset is None:
             raise Exception(
