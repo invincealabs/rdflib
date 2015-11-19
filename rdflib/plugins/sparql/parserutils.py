@@ -147,6 +147,9 @@ class CompValue(OrderedDict):
         self.name = name
         self.update(values)
 
+    def __hash__(self):
+        return hash(repr(self))
+
     def __str__(self):
         return self.name + "_" + OrderedDict.__str__(self)
 
