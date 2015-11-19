@@ -108,7 +108,6 @@ def evalLazyJoin(ctx, join):
 def evalPart_cached(ctx, join):
     return list(evalPart(ctx, join))
 
-
 def evalJoin(ctx, join):
 
     # TODO: Deal with dict returned from evalPart from GROUP BY

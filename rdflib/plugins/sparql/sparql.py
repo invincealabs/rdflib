@@ -341,7 +341,8 @@ class QueryContext(object):
         return hash(self.solution())
 
     def __eq__(self, o):
-        return hash(self.solution()) == hash(o.solution())
+        return (hash(self.solution()) == hash(o.solution())
+                and self.graph == o.graph)
 
 class Prologue:
 
