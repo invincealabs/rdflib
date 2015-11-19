@@ -52,6 +52,7 @@ else:
         kwargs['test_suite'] = "nose.collector"
         kwargs['install_requires'] = [
             'isodate',
+            'functools32',
             'pyparsing', 'SPARQLWrapper']
 
         if sys.version_info[1]<7:  # Python 2.6

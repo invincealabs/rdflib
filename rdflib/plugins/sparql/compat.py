@@ -24,6 +24,11 @@ try:
 except ImportError:
     from ordereddict import OrderedDict  # extra module
 
+try:
+    from functools import lru_cache
+except ImportError:
+    from functools32 import lru_cache
+
 import sys
 
 if sys.version_info[:2] < (2, 7):
