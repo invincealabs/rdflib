@@ -19,6 +19,7 @@ import collections
 from rdflib import Variable, Graph, BNode, URIRef, Literal
 
 from rdflib.plugins.sparql import CUSTOM_EVALS
+import hashlib
 from rdflib.plugins.sparql.parserutils import value
 from rdflib.plugins.sparql.sparql import (
     QueryContext, AlreadyBound, FrozenBindings, SPARQLError)
@@ -27,6 +28,11 @@ from rdflib.plugins.sparql.evalutils import (
 
 from rdflib.plugins.sparql.aggregates import evalAgg
 
+CACHE = False
+
+def useCache():
+    global CACHE
+    return CACHE
 
 def evalBGP(ctx, bgp):
 
@@ -96,18 +102,32 @@ def evalLazyJoin(ctx, join):
         for b in evalPart(c, join.p2):
             yield b.merge(a)
 
+def _hashSubTree(ctx, part):
+    return hashlib.sha1(str(ctx.solution()) + str(part)).hexdigest()
+
+result_cache = {}
 
 def evalJoin(ctx, join):
 
     # TODO: Deal with dict returned from evalPart from GROUP BY
     # only ever for join.p1
 
-    if join.lazy:
+    if join.lazy and not useCache():
         return evalLazyJoin(ctx, join)
     else:
-        a = evalPart(ctx, join.p1)
-        b = set(evalPart(ctx, join.p2))
-        return _join(a, b)
+        if _hashSubTree(ctx, join.p1) in result_cache and useCache():
+            a = result_cache[_hashSubTree(ctx, join.p1)]
+        else:
+            a = evalPart(ctx, join.p1)
+            result_cache[_hashSubTree(ctx, join.p1)] = list(a)
+
+        if _hashSubTree(ctx, join.p2) in result_cache and useCache():
+            b = result_cache[_hashSubTree(ctx, join.p2)]
+        else:
+            b = evalPart(ctx, join.p2)
+            result_cache[_hashSubTree(ctx, join.p2)] = set(b)
+
+        return _join(a, set(b))
 
 
 def evalUnion(ctx, union):
