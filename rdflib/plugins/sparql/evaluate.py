@@ -20,6 +20,7 @@ from rdflib import Variable, Graph, BNode, URIRef, Literal
 
 from rdflib.plugins.sparql import CUSTOM_EVALS
 import hashlib
+from rdflib.plugins.sparql.compat import lru_cache
 from rdflib.plugins.sparql.parserutils import value
 from rdflib.plugins.sparql.sparql import (
     QueryContext, AlreadyBound, FrozenBindings, SPARQLError)
@@ -97,37 +98,28 @@ def evalLazyJoin(ctx, join):
     essentially doing the join implicitly
     hopefully evaluating much fewer triples
     """
-    for a in evalPart(ctx, join.p1):
+    for a in evalPart_cached(ctx, join.p1):
         c = ctx.thaw(a)
-        for b in evalPart(c, join.p2):
+        for b in evalPart_cached(c, join.p2):
             yield b.merge(a)
 
-def _hashSubTree(ctx, part):
-    return hashlib.sha1(str(ctx.solution()) + str(part)).hexdigest()
 
-result_cache = {}
+@lru_cache(maxsize=20)
+def evalPart_cached(ctx, join):
+    return list(evalPart(ctx, join))
+
 
 def evalJoin(ctx, join):
 
     # TODO: Deal with dict returned from evalPart from GROUP BY
     # only ever for join.p1
 
-    if join.lazy and not useCache():
+    if join.lazy:
         return evalLazyJoin(ctx, join)
     else:
-        if _hashSubTree(ctx, join.p1) in result_cache and useCache():
-            a = result_cache[_hashSubTree(ctx, join.p1)]
-        else:
-            a = evalPart(ctx, join.p1)
-            result_cache[_hashSubTree(ctx, join.p1)] = list(a)
-
-        if _hashSubTree(ctx, join.p2) in result_cache and useCache():
-            b = result_cache[_hashSubTree(ctx, join.p2)]
-        else:
-            b = evalPart(ctx, join.p2)
-            result_cache[_hashSubTree(ctx, join.p2)] = set(b)
-
-        return _join(a, set(b))
+        a = evalPart_cached(ctx, join.p1)
+        b = set(evalPart_cached(ctx, join.p2))
+        return _join(a, b)
 
 
 def evalUnion(ctx, union):
