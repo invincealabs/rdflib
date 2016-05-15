@@ -102,8 +102,12 @@ class RecursiveSerializer(Serializer):
         """Take a hash from predicate uris to lists of values.
            Sort the lists of values.  Return a sorted list of properties."""
         # Sort object lists
-        for prop, objects in properties.items():
-            objects.sort()
+        try:
+            for prop, objects in properties.items():
+                objects.sort()
+        except TypeError:
+            # If we can't sort the objects, it's not the end of the world
+            pass
 
         # Make sorted list of properties
         propList = []
