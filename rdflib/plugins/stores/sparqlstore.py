@@ -249,6 +249,7 @@ class SPARQLStore(NSSPARQLWrapper, Store):
                    " ".join(initBindings[x].n3() for x in v))
 
         self.resetQuery()
+        self.setMethod("POST")
         if self._is_contextual(queryGraph):
             self.addDefaultGraph(queryGraph)
         self.setQuery(query)
@@ -605,7 +606,7 @@ class SPARQLUpdateStore(SPARQLStore):
 
 
             triple = "%s %s %s ." % (subject.n3(), predicate.n3(), obj.n3())
-            data += "INSERT DATA { GRAPH <%s> { %s } }\n" % (
+            data += "INSERT DATA { GRAPH <%s> { %s } };\n" % (
                 context.identifier, triple)
         self._do_update(data)
 
