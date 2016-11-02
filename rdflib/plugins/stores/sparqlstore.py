@@ -46,6 +46,7 @@ import urlparse
 
 class NSSPARQLWrapper(SPARQLWrapper):
     nsBindings = {}
+    extraHeaders = {}
 
     def setNamespaceBindings(self, bindings):
         """
@@ -55,6 +56,25 @@ class NSSPARQLWrapper(SPARQLWrapper):
         @param bindings: A dictionary of prefixs to URIs
         """
         self.nsBindings.update(bindings)
+
+    def setExtraHeaders(self, **headers):
+        """
+        Set extra headers to include with the next request
+
+        @param headers: dictionary of header values
+        """
+        self.extraHeaders = headers
+
+    def resetQuery(self):
+        self.extraHeaders = {}
+        super(NSSPARQLWrapper, self).resetQuery()
+
+    def _createRequest(self):
+        request = super(NSSPARQLWrapper, self)._createRequest()
+        for header in self.extraHeaders.iteritems():
+          request.add_header(*header)
+
+        return request
 
     def setQuery(self, query):
         """
@@ -233,7 +253,8 @@ class SPARQLStore(NSSPARQLWrapper, Store):
               initNs={},
               initBindings={},
               queryGraph=None,
-              DEBUG=False):
+              DEBUG=False,
+              headers={}):
         self.debug = DEBUG
         assert isinstance(query, basestring)
         self.setNamespaceBindings(initNs)
@@ -250,6 +271,9 @@ class SPARQLStore(NSSPARQLWrapper, Store):
 
         self.resetQuery()
         self.setMethod("POST")
+        self.setRequestMethod(URLENCODED if self.postAsEncoded else POSTDIRECTLY)
+        self.setExtraHeaders(**headers)
+
         if self._is_contextual(queryGraph):
             self.addDefaultGraph(queryGraph)
         self.setQuery(query)
