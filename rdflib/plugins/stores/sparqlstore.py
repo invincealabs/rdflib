@@ -708,7 +708,6 @@ class SPARQLUpdateStore(SPARQLStore):
         self.debug = DEBUG
         assert isinstance(query, basestring)
         self.setNamespaceBindings(initNs)
-        query = self.injectPrefixes(query)
 
         if self._is_contextual(queryGraph):
             query = self._insert_named_graph(query, queryGraph)
