@@ -278,32 +278,35 @@ def translateGroupGraphPattern(graphPattern):
         else:
             g.append(p)
 
-    G = BGP()
-    for p in g:
-        if p.name == 'OptionalGraphPattern':
-            A = translateGroupGraphPattern(p.graph)
-            if A.name == 'Filter':
-                G = LeftJoin(G, A.p, A.expr)
-            else:
-                G = LeftJoin(G, A, TrueFilter)
-        elif p.name == 'MinusGraphPattern':
-            G = Minus(p1=G, p2=translateGroupGraphPattern(p.graph))
-        elif p.name == 'GroupOrUnionGraphPattern':
-            G = Join(p1=G, p2=translateGroupOrUnionGraphPattern(p))
-        elif p.name == 'GraphGraphPattern':
-            G = Join(p1=G, p2=translateGraphGraphPattern(p))
-        elif p.name == 'InlineData':
-            G = Join(p1=G, p2=translateInlineData(p))
-        elif p.name == 'ServiceGraphPattern':
-            G = Join(p1=G, p2=p)
-        elif p.name in ('BGP', 'Extend'):
-            G = Join(p1=G, p2=p)
-        elif p.name == 'Bind':
-            G = Extend(G, p.expr, p.var)
+    if len(g) == 1 and g[0].name =='BGP':
+      G = g[0]
+    else:
+      G = BGP()
+      for p in g:
+          if p.name == 'OptionalGraphPattern':
+              A = translateGroupGraphPattern(p.graph)
+              if A.name == 'Filter':
+                  G = LeftJoin(G, A.p, A.expr)
+              else:
+                  G = LeftJoin(G, A, TrueFilter)
+          elif p.name == 'MinusGraphPattern':
+              G = Minus(p1=G, p2=translateGroupGraphPattern(p.graph))
+          elif p.name == 'GroupOrUnionGraphPattern':
+              G = Join(p1=G, p2=translateGroupOrUnionGraphPattern(p))
+          elif p.name == 'GraphGraphPattern':
+              G = Join(p1=G, p2=translateGraphGraphPattern(p))
+          elif p.name == 'InlineData':
+              G = Join(p1=G, p2=translateInlineData(p))
+          elif p.name == 'ServiceGraphPattern':
+              G = Join(p1=G, p2=p)
+          elif p.name in ('BGP', 'Extend'):
+              G = Join(p1=G, p2=p)
+          elif p.name == 'Bind':
+              G = Extend(G, p.expr, p.var)
 
-        else:
-            raise Exception('Unknown part in GroupGraphPattern: %s - %s' %
-                            (type(p), p.name))
+          else:
+              raise Exception('Unknown part in GroupGraphPattern: %s - %s' %
+                              (type(p), p.name))
 
     if filters:
         G = Filter(expr=filters, p=G)
